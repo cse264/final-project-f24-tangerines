@@ -5,7 +5,7 @@ import './ViewChefs.css';
 function ViewChefs () {
     return(
         <div>
-
+            <p>View Chefs</p>
         </div>
     )
 }

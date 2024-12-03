@@ -5,7 +5,7 @@ import './FoodCategories.css';
 function FoodCategories () {
     return(
         <div>
-
+            <p>Food Categories</p>
         </div>
     )
 }

@@ -12,6 +12,7 @@ body{
     margin-right: 60vh;
     margin-top: 10vh;
     padding: 20px;
+    align-items: center;
 }
 
 .logo {

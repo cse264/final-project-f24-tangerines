@@ -5,7 +5,7 @@ import './MyRecipes.css';
 function MyRecipes () {
     return(
         <div>
-
+            <p>My Recipes</p>
         </div>
     )
 }
