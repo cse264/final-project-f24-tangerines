@@ -9,6 +9,7 @@ import LogIn from './pages/Log_In/LogIn';
 import NavBar from './pages/navbar/NavBar';
 import MyInfo from './pages/My_Info/MyInfo';
 import Search from './pages/Search/Search';
+import ExampleRecipe from './pages/ExampleRecipe/ExampleRecipe';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/navbar" element={<NavBar />} />
         <Route path="/myinfo" element={<MyInfo />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/ExampleRecipe" element={<ExampleRecipe />} />
       </Routes>
     </Router>
   )
