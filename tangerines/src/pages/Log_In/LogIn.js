@@ -138,7 +138,7 @@ function LogIn() {
             <p class="error">Email/Password not found. Please try again.</p>
 
             {/* Submit/Log In */}
-            <button type="submit" class="btn btn-primary" onClick={() => navigate("/search")}>
+            <button type="submit" class="btn btn-primary">
               Log In
             </button>
             {/* Google Sign-In */}
@@ -201,7 +201,7 @@ function LogIn() {
                 />
               </div>
               {error && <p style={{ color: "red" }}>{error}</p>}
-              <button type="submit" disabled={loading} onClick={()=> navigate("./search")}>
+              <button type="submit" disabled={loading} >
                 {loading ? "Signing up..." : "Sign Up"}
               </button>
 
