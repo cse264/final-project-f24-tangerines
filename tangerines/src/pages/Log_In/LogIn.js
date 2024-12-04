@@ -104,7 +104,7 @@ function LogIn() {
       if (doc.exists && doc.data().preferences.length === 0) {
         setShowPreferences(true);
       } else {
-        navigate("/myinfo");
+        navigate("/home");
       }
     } catch (error) {
       setError("Invalid email or password. Please try again.");

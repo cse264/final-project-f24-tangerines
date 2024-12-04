@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import firebase from "firebase/compat/app";
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import "firebase/compat/storage";
@@ -32,4 +33,4 @@ const auth = firebase.auth();
 const storage = firebase.storage().ref(); //.ref() is a reference to the root of our bucket
 const provider = new firebase.auth.GoogleAuthProvider();
 
-export { db, auth, storage, provider, firebase };
+export { db, auth, storage, provider, firebase, doc, getDoc };

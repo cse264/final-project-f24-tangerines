@@ -1,8 +1,10 @@
-body{
+/* Body Styling */
+body {
     background-image: none;
 }
 
-.navbar{
+/* Navbar Styling */
+.navbar {
     padding: 0;
     margin: 0;
     box-shadow: 0 5px 5px #E9631A;
@@ -15,34 +17,138 @@ body{
     width: 170%;
 }
 
-.search-icon{
+.search-icon {
     padding: 2.1vh;
     margin-top: 1.3vh;
-    margin-right: .5vh;
+    margin-right: 0.5vh;
     height: 55px;
     width: 55px;
+    cursor: pointer;
 }
 
-.my-recipe-icon{
+.my-recipe-icon {
     padding: 2vh;
     height: 60px;
     width: 60px;
 }
 
-.home-icon{
+.home-icon {
     padding: 1vh;
     height: 60px;
     width: 60px;
 }
 
-.explore-recipe-icon{
+.explore-recipe-icon {
     padding: 2vh;
     height: 60px;
     width: 60px;
 }
 
-.view-chefs-icon{
+.view-chefs-icon {
     padding: 2vh;
     height: 60px;
     width: 60px;
+}
+
+/* Search Popup Styling */
+.search-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Search Popup Content */
+.search-popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* Close Button Styling */
+.close-popup {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+}
+
+.close-popup:hover {
+    color: #E9631A; /* Tang-erines orange */
+}
+
+/* Search Input and Button Styling */
+.search-input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+
+.search-button {
+    padding: 10px 20px;
+    background-color: #E9631A; /* Tang-erines orange */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.search-button:hover {
+    background-color: #b05b04; /* Darker orange */
+}
+
+/* Search Results Styling */
+.search-results {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.search-results h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.search-results ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.search-results li {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8f4e3; /* Light beige background for results */
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-results h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #E9631A; /* Tang-erines orange */
+}
+
+.search-results p {
+    margin: 5px 0 0;
+    font-size: 0.9rem;
+    color: #666;
 }

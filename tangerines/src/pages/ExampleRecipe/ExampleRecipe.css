@@ -1,0 +1,113 @@
+
+/* General container styling */
+.recipe-container {
+    width: 90%;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #f8f4e3;
+    padding: 20px;
+    border-radius: 10px;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  /* Title styling */
+  .recipe-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    background-color: white;
+    padding: 10px;
+    color: #d97706;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Recipe image styling */
+  .recipe-image {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto 20px auto;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Section styling */
+  .section {
+    margin: 20px 0;
+  }
+  
+  .section-title {
+    text-align: center;
+    font-size: 1.5rem;
+    color: #d97706;
+    margin-bottom: 10px;
+    background-color: white;
+    padding: 5px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Ingredients list styling */
+  .ingredients-list {
+    text-align: center;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+  }
+  
+  .ingredients-list li {
+    font-size: 1rem;
+    margin: 5px 0;
+  }
+  
+  /* Instructions styling */
+  .instructions {
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+  }
+  
+  /* Save button styling */
+  .save-button {
+    display: block;
+    width: 200px;
+    margin: 20px auto 0 auto;
+    padding: 10px;
+    background-color: #d97706;
+    color: #d97706;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    
+  }
+  
+
+  .rating-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .rating-container select {
+    margin: 10px;
+    padding: 5px;
+    font-size: 16px;
+  }
+  
+  .rating-container button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .rating-container button:hover {
+    background-color: #0056b3;
+  }
+  
+  
