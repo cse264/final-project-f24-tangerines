@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./MyRecipes.css";
 import "../navbar/NavBar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { db, auth } from "../../firebase";
 
 import logo from "../../assets/images/Logo.svg";
@@ -14,6 +14,7 @@ import PlaceholderImg from "../../assets/images/placeholder-200x200.png";
 
 function MyRecipes() {
   const [savedRecipes, setSavedRecipes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function getUserInfo() {
@@ -26,7 +27,23 @@ function MyRecipes() {
           if (doc.exists) {
             const userData = doc.data();
             console.log("User data:", userData);
-            setSavedRecipes(userData.savedRecipes || []);
+            const recipeIDArray = userData.savedRecipes;
+            recipeIDArray.forEach((recipeID) => {
+                db.collection("recipes")
+                    .doc(recipeID)
+                    .get()
+                    .then((doc) => {
+                    if (doc.exists) {
+                        const recipeData = doc.data();
+                        setSavedRecipes((savedRecipes) => [...savedRecipes, recipeData]);
+                    } else {
+                        console.log("No such document!");
+                    }
+                    })
+                    .catch((error) => {
+                    console.log("Error getting document:", error);
+                    });
+            });
           }
         } else {
           console.log("No user is signed in");
@@ -76,7 +93,7 @@ function MyRecipes() {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         {/* NavBar Logo */}
-        <Link className="navbar-brand" to="/">
+        <Link className="navbar-brand" to="/home">
           <img className="logo" src={logo} alt="Logo" />
         </Link>
 
@@ -113,7 +130,7 @@ function MyRecipes() {
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link" to="/myinfo">
+              <Link className="nav-link" to="/home">
                 <img className="home-icon" src={HomeIcon} alt="Home" />
               </Link>
             </li>
@@ -129,7 +146,7 @@ function MyRecipes() {
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link" to="/viewchefs">
+              <Link className="nav-link" to="/myinfo">
                 <img
                   className="view-chefs-icon"
                   src={ViewChefsIcon}
@@ -161,6 +178,7 @@ function MyRecipes() {
               src={recipe.image || PlaceholderImg}
               className="rounded recipe-img"
               alt={recipe.name}
+              onClick={() => navigate(`/recipe/${recipe.title}`)}
             />
             <p className="mt-2">{recipe.name}</p>
             <button className="btn" onClick={() => removeRecipe(recipe.id)}>

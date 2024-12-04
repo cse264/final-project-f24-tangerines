@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./MyInfo.css";
 import { db, auth } from "../../firebase";
 import "../navbar/NavBar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/Logo.svg";
 import searchIcon from "../../assets/images/Search Icon.svg";
 import MyRecipeIcon from "../../assets/images/Recipe Button.svg";
@@ -20,6 +20,7 @@ function MyInfo() {
   const [preferences, setPreferences] = useState([]);
   const [availablePreferences, setAvailablePreferences] = useState([]);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Fetch the signed-in user and their information when the component mounts
   useEffect(() => {
@@ -33,9 +34,28 @@ function MyInfo() {
           if (doc.exists) {
             const userData = doc.data();
             console.log("User data:", userData);
+            const recipeIDArray = userData.savedRecipes;
+            recipeIDArray.forEach((recipeID) => {
+              db.collection("recipes")
+                .doc(recipeID)
+                .get()
+                .then((doc) => {
+                  if (doc.exists) {
+                    const recipeData = doc.data();
+                    setSavedRecipes((savedRecipes) => [
+                      ...savedRecipes,
+                      recipeData,
+                    ]);
+                  } else {
+                    console.log("No such document!");
+                  }
+                })
+                .catch((error) => {
+                  console.log("Error getting document:", error);
+                });
+            });
             setUser(userData);
             setMyPreferences(userData.preferences);
-            setSavedRecipes(userData.savedRecipes);
           }
         } else {
           console.log("No user is signed in");
@@ -47,79 +67,6 @@ function MyInfo() {
 
     getUserInfo();
   }, []);
-
-  // const handlePreferenceChange = async (e) => {
-  //   const value = e.target.value;
-  //   const preferenceArray = value.split(",");
-  //   try {
-  //     if (user) {
-  //       const userRef = db.collection("users").doc(user.email);
-  //       const doc = await userRef.get();
-
-  //       if (doc.exists) {
-  //         await userRef.update({
-  //           preferences: preferenceArray,
-  //         });
-  //         setMyPreferences(preferenceArray);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
-
-  const handleSavedRecipes = async (e) => {
-    const value = e.target.value;
-    try {
-      if (user) {
-        const userRef = db.collection("users").doc(user.email); // Reference to location in database
-        const doc = await userRef.get();
-        const userRecipes = doc.data().savedRecipes;
-
-        if (doc.exists) {
-          if (userRecipes.includes(value)) {
-            userRecipes.splice(userRecipes.indexOf(value), 1);
-            await userRef.update({
-              savedRecipes: userRecipes,
-            });
-            setSavedRecipes(userRecipes); // Update state to reflect new saved recipes
-          } else {
-            console.log("Recipe does not exist");
-          }
-        }
-      }
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  // const handleAddPreference = async () => {
-  //   // Split the new preferences by comma, trim whitespace, and filter empty values
-  //   const newPreferencesArray = newPreference
-  //     .split(",")
-  //     .map((p) => p.trim())
-  //     .filter(Boolean);
-
-  //   // Remove duplicates from new preferences and make sure they do not already exist in current preferences
-  //   const updatedPreferences = [
-  //     ...myPreferences,
-  //     ...newPreferencesArray.filter((p) => !myPreferences.includes(p)),
-  //   ];
-
-  //   try {
-  //     if (user) {
-  //       const userRef = db.collection("users").doc(user.email);
-  //       await userRef.update({
-  //         preferences: updatedPreferences,
-  //       });
-  //       setMyPreferences(updatedPreferences);
-  //       setNewPreference(""); // Clear the new preference input
-  //       setShowAddPreferenceModal(false); // Close the modal
-  //     }
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
 
   // Fetch available preferences from Firestore when "+" button is clicked
   const fetchPreferences = async () => {
@@ -193,12 +140,37 @@ function MyInfo() {
     );
   };
 
+  const removeRecipe = async (id) => {
+    if (!savedRecipes.find((recipe) => recipe.id === id)) {
+      console.log("Recipe not found");
+    } else {
+      try {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userRef = db.collection("users").doc(currentUser.email);
+          const doc = await userRef.get();
+          if (doc.exists) {
+            const updatedRecipes = savedRecipes.filter(
+              (recipe) => recipe.id !== id
+            );
+            await userRef.update({
+              savedRecipes: updatedRecipes,
+            });
+            setSavedRecipes(updatedRecipes);
+          }
+        }
+      } catch (error) {
+        console.log("Error removing recipe:", error);
+      }
+    }
+  };
+
   return (
     <div style={{ backgroundColor: "#EBEBDF", height: "100vh", margin: 0 }}>
       {/* Navbar */}
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         {/* NavBar Logo */}
-        <Link class="navbar-brand" to="/">
+        <Link class="navbar-brand" to="/home">
           <img class="logo" src={logo} alt="Logo" />
         </Link>
 
@@ -235,7 +207,7 @@ function MyInfo() {
             </li>
 
             <li class="nav-item">
-              <Link class="nav-link" to="/myinfo">
+              <Link class="nav-link" to="/home">
                 <img class="home-icon" src={HomeIcon} alt="Home" />
               </Link>
             </li>
@@ -251,7 +223,7 @@ function MyInfo() {
             </li>
 
             <li class="nav-item">
-              <Link class="nav-link" to="/viewchefs">
+              <Link class="nav-link" to="/myinfo">
                 <img
                   class="view-chefs-icon"
                   src={ViewChefsIcon}
@@ -304,6 +276,24 @@ function MyInfo() {
       <div className="card">
         <h2>Saved Recipes</h2>
         {/* Add code here to display saved recipes if needed */}
+      </div>
+
+      {/* Recipe images */}
+      <div className="recipe-container d-flex justify-content-center flex-wrap gap-4">
+        {savedRecipes.map((recipe) => (
+          <div key={recipe.id} className="recipe-generic text-center">
+            <img
+              src={recipe.image}
+              className="rounded recipe-img"
+              alt={recipe.title}
+              onClick={() => navigate(`/recipe/${recipe.title}`)}
+            />
+            <p className="mt-2">{recipe.name}</p>
+            <button className="btn" onClick={() => removeRecipe(recipe.id)}>
+              Remove
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Preference Selection Screen (Full Screen Overlay) */}

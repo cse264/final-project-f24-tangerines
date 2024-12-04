@@ -10,7 +10,7 @@ import NavBar from './pages/navbar/NavBar';
 import MyInfo from './pages/My_Info/MyInfo';
 import Home from './pages/Home/Home';
 import Search from './pages/Search/Search';
-//import MyRecipes from './pages/My_Recipes/MyRecipes';
+// import MyRecipes from './pages/My_Recipes/MyRecipes';
 
 
 function App() {

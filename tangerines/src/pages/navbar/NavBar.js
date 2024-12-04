@@ -15,7 +15,7 @@ function NavBar() {
         <div>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
           {/* NavBar Logo */}
-          <a class="navbar-brand" href="/">
+          <a class="navbar-brand" href="/home">
             <img class="logo" src={logo} alt="Logo" />
           </a>
       
@@ -41,7 +41,7 @@ function NavBar() {
               </li>
 
               <li class="nav-item">
-                <Link class="nav-link" to="/myinfo">
+                <Link class="nav-link" to="/home">
                 <img class="home-icon" src={HomeIcon} alt="Home" />
                 </Link>
               </li>
