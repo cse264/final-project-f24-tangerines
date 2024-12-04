@@ -41,7 +41,7 @@ function NavBar() {
               </li>
 
               <li class="nav-item">
-                <Link class="nav-link" to="/home">
+                <Link class="nav-link" to="/myinfo">
                 <img class="home-icon" src={HomeIcon} alt="Home" />
                 </Link>
               </li>

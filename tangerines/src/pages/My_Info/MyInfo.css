@@ -1,0 +1,20 @@
+
+.header-box {
+    top: 20%;
+    left: 10%;
+    transform: translate(-50%, -40%);
+    position: absolute;
+    display: inline-block;
+    background-color: white;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 0px #E9631A;
+    color: #E9631A;
+    font-family: "Kay Pho Du", serif;
+}
+
+.card{
+    top: 10%;
+    font-family: "Kay Pho Du", serif;
+    color: #707070;
+}
