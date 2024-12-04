@@ -43,7 +43,7 @@ function LogIn() {
           username: user.displayName,
           role: "normal",
           preferences: [],
-          savedRecipies: [],
+          savedRecipes: [],
           profilePicture: user.photoURL,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
@@ -87,7 +87,7 @@ function LogIn() {
         username: username,
         role: "normal",
         preferences: [],
-        savedRecipies: [],
+        savedRecipes: [],
         profilePicture: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
@@ -145,7 +145,7 @@ function LogIn() {
             <p class="or">or</p>
             <button
               type="googleSubmit"
-              className="btn btn-primary"
+              class="btn btn-primary"
               onClick={handleGoogleSignIn}
             >
               Google Log In
