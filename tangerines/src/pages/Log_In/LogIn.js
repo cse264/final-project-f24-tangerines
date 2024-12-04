@@ -137,7 +137,7 @@ function LogIn() {
             <p class="error">Username/Password not found. Please try again.</p>
 
             {/* Submit/Log In */}
-            <button type="submit" class="btn btn-primary" onClick={() => navigate("/myinfo")}>
+            <button type="submit" class="btn btn-primary" onClick={() => navigate("/search")}>
               Log In
             </button>
             {/* Google Sign-In */}
