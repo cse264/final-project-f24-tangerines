@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { createSearchParams, Link } from "react-router-dom";
 import "./MyRecipes.css";
 import "../navbar/NavBar.css";
+import { Link } from "react-router-dom";
 import { db, auth } from "../../firebase";
 
 import logo from "../../assets/images/Logo.svg";
@@ -26,7 +26,7 @@ function MyRecipes() {
           if (doc.exists) {
             const userData = doc.data();
             console.log("User data:", userData);
-            setSavedRecipes(userData.savedRecipes);
+            setSavedRecipes(userData.savedRecipes || []);
           }
         } else {
           console.log("No user is signed in");
@@ -39,7 +39,6 @@ function MyRecipes() {
     getUserInfo();
   }, []);
 
-  // working
   const addRecipe = (name) => {
     const newRecipe = {
       id: savedRecipes.length + 1,
@@ -50,7 +49,7 @@ function MyRecipes() {
   };
 
   const removeRecipe = async (id) => {
-    if (!savedRecipes.contains(id)) {
+    if (!savedRecipes.find((recipe) => recipe.id === id)) {
       console.log("Recipe not found");
     } else {
       try {
@@ -59,14 +58,15 @@ function MyRecipes() {
           const userRef = db.collection("users").doc(currentUser.email);
           const doc = await userRef.get();
           if (doc.exists) {
+            const updatedRecipes = savedRecipes.filter((recipe) => recipe.id !== id);
             await userRef.update({
-              savedRecipes: savedRecipes.filter((recipe) => recipe.id !== id),
+              savedRecipes: updatedRecipes,
             });
-            setSavedRecipes(savedRecipes.filter((recipe) => recipe.id !== id));
+            setSavedRecipes(updatedRecipes);
           }
         }
       } catch (error) {
-        console.log("Error removing recipe");
+        console.log("Error removing recipe:", error);
       }
     }
   };
@@ -74,15 +74,15 @@ function MyRecipes() {
   return (
     <div style={{ backgroundColor: "#EBEBDF", minHeight: "100vh" }}>
       {/* Navbar */}
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <nav className="navbar navbar-expand-lg navbar-light bg-light">
         {/* NavBar Logo */}
-        <a class="navbar-brand" href="/">
-          <img class="logo" src={logo} alt="Logo" />
-        </a>
+        <Link className="navbar-brand" to="/">
+          <img className="logo" src={logo} alt="Logo" />
+        </Link>
 
         {/* Toggle button for smaller screens */}
         <button
-          class="navbar-toggler"
+          className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
@@ -90,48 +90,48 @@ function MyRecipes() {
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <span class="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon"></span>
         </button>
 
         {/* Navbar links */}
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav mx-auto">
-            <li class="nav-item active">
-              <Link class="navbar-link" to="/search">
-                <img class="search-icon" src={searchIcon} alt="Search" />
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav mx-auto">
+            <li className="nav-item active">
+              <Link className="navbar-link" to="/search">
+                <img className="search-icon" src={searchIcon} alt="Search" />
               </Link>
             </li>
 
-            <li class="nav-item">
-              <Link class="nav-link" to="/myrecipes">
+            <li className="nav-item">
+              <Link className="nav-link" to="/myrecipes">
                 <img
-                  class="my-recipe-icon"
+                  className="my-recipe-icon"
                   src={MyRecipeIcon}
                   alt="My Recipes"
                 />
               </Link>
             </li>
 
-            <li class="nav-item">
-              <Link class="nav-link" to="/myinfo">
-                <img class="home-icon" src={HomeIcon} alt="Home" />
+            <li className="nav-item">
+              <Link className="nav-link" to="/myinfo">
+                <img className="home-icon" src={HomeIcon} alt="Home" />
               </Link>
             </li>
 
-            <li class="nav-item">
-              <Link class="nav-link" to="/foodcategories">
+            <li className="nav-item">
+              <Link className="nav-link" to="/foodcategories">
                 <img
-                  class="explore-recipe-icon"
+                  className="explore-recipe-icon"
                   src={ExploreRecipesIcon}
                   alt="Explore Recipes"
                 />
               </Link>
             </li>
 
-            <li class="nav-item">
-              <Link class="nav-link" to="/viewchefs">
+            <li className="nav-item">
+              <Link className="nav-link" to="/viewchefs">
                 <img
-                  class="view-chefs-icon"
+                  className="view-chefs-icon"
                   src={ViewChefsIcon}
                   alt="View Chefs"
                 />
@@ -146,21 +146,23 @@ function MyRecipes() {
         <h1>My Saved Recipes</h1>
       </div>
 
-      {/* Hidden - should appear if person has no saves */}
-      <div className="card">
-        <h2>Save a recipe to add it here!</h2>
-      </div>
+      {/* Show this message if there are no saved recipes */}
+      {savedRecipes.length === 0 && (
+        <div className="card">
+          <h2>Save a recipe to add it here!</h2>
+        </div>
+      )}
 
       {/* Recipe images */}
       <div className="recipe-container d-flex justify-content-center flex-wrap gap-4">
         {savedRecipes.map((recipe) => (
           <div key={recipe.id} className="recipe-generic text-center">
             <img
-              src={recipe.image}
+              src={recipe.image || PlaceholderImg}
               className="rounded recipe-img"
-              alt={recipe.title}
+              alt={recipe.name}
             />
-            <p className="mt-2">{recipe.title}</p>
+            <p className="mt-2">{recipe.name}</p>
             <button className="btn" onClick={() => removeRecipe(recipe.id)}>
               Remove
             </button>

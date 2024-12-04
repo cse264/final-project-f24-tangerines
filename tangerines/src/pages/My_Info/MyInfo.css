@@ -19,25 +19,83 @@
     color: #707070;
 }
 
-.modal {
+.full-screen-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
     display: flex;
     justify-content: center;
     align-items: center;
   }
   
-  .modal-content {
+  .full-screen-content {
     background: #fff;
-    padding: 20px;
+    padding: 40px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    width: 100%;
-    font-family: "Kay Pho Du", serif;
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    overflow-y: auto;
+    max-height: 90%;
   }
   
+  .preference-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  
+  .preference-button {
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    text-align: center;
+    flex-basis: 7%; /* Ensures buttons are spaced out */
+    min-width: 120px;
+  }
+    
+  .preference-button:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+  }
+  
+  .preference-button.selected {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .save-preferences-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 12px 20px;
+    font-size: 1.2rem;
+    background-color: #ebebdf;
+    color: black;
+    border: 2px solid #E9631A;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .save-preferences-btn:hover {
+    background-color: #E9631A;
+  }
+  
+  .cancel-preferences-btn {
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+  }
