@@ -5,7 +5,7 @@ import { useState } from "react";
 import "./LogIn.css";
 import LogoImage from "../../assets/images/Logo Header.svg";
 import { db, auth, provider, firebase } from "../../firebase";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 function LogIn() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -14,6 +14,7 @@ function LogIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   const toggleForm = () => {
@@ -21,7 +22,7 @@ function LogIn() {
   };
 
   const hideSignUp = () => {
-    setIsSignUp(false); 
+    setIsSignUp(false);
     setIsSignUpVisible(true);
   };
 
@@ -39,11 +40,11 @@ function LogIn() {
           //setting user data
           uid: user.uid,
           email: user.email,
-          shoppingList: [],
-          isChef: false,
-          allergies: [],
-          likedRecipes: [],
+          username: user.displayName,
+          role: "normal",
+          preferences: [],
           savedRecipies: [],
+          profilePicture: user.photoURL,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       }
@@ -83,11 +84,11 @@ function LogIn() {
       await db.collection("users").doc(user.email).set({
         uid: user.uid,
         email: user.email,
-        shoppingList: [],
-        isChef: false,
-        allergies: [],
-        likedRecipes: [],
+        username: username,
+        role: "normal",
+        preferences: [],
         savedRecipies: [],
+        profilePicture: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
@@ -134,7 +135,7 @@ function LogIn() {
               />
             </div>
 
-            <p class="error">Username/Password not found. Please try again.</p>
+            <p class="error">Email/Password not found. Please try again.</p>
 
             {/* Submit/Log In */}
             <button type="submit" class="btn btn-primary" onClick={() => navigate("/search")}>
@@ -173,7 +174,18 @@ function LogIn() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
+                  placeholder="Enter Email"
+                  required
+                  class="form-control"
+                />
+              </div>
+              {/* Username input */}
+              <div>
+                <input
+                  type="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter Username"
                   required
                   class="form-control"
                 />
@@ -189,7 +201,7 @@ function LogIn() {
                 />
               </div>
               {error && <p style={{ color: "red" }}>{error}</p>}
-              <button type="submit" disabled={loading}>
+              <button type="submit" disabled={loading} onClick={()=> navigate("./search")}>
                 {loading ? "Signing up..." : "Sign Up"}
               </button>
 

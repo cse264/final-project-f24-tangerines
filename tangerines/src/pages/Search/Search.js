@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import './Search.css';
-import { db, auth } from '../../firebase';
+import React, { useState, useEffect } from "react";
+import "./Search.css";
+import { db, auth } from "../../firebase";
 
 function Search() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [searchType, setSearchType] = useState('recipe');
+  const [searchType, setSearchType] = useState("recipe");
   const [userPreferences, setUserPreferences] = useState(null);
 
   // Fetch user preferences when the component mounts
@@ -37,8 +37,8 @@ function Search() {
     try {
       let results = [];
       if (searchType === "recipe") {
-        // Query the "recipes" collection by the "title" field
-        const querySnapshot = await db.collection('recipes')
+        const querySnapshot = await db
+          .collection("recipes")
           .where("title", "==", search)
           .get();
 
@@ -46,26 +46,58 @@ function Search() {
           results.push({ id: doc.id, ...doc.data() });
         });
       } else if (searchType === "ingredient") {
-        // Query the "recipes" collection for ingredients
-        const querySnapshot = await db.collection('recipes')
-          .where("ingredients.ingredient", "array-contains", search)
-          .get();
-        
+        const querySnapshot = await db.collection("recipes").get();
         querySnapshot.forEach((doc) => {
-          results.push({ id: doc.id, ...doc.data() });
+          const recipe = doc.data();
+          const ingredientsArray = recipe.ingredients || [];
+
+          const hasIngredient = ingredientsArray.some(
+            (item) => item.ingredient.toLowerCase() === search.toLowerCase()
+          );
+
+          if (hasIngredient) {
+            results.push({ id: doc.id, ...recipe });
+          }
         });
       } else if (searchType === "preferences") {
         if (userPreferences === null || userPreferences.length === 0) {
           console.log("No user preferences available");
         } else {
-          // Query recipes based on user preferences (e.g., categories or areas)
-          const querySnapshot = await db.collection('recipes')
+          // Fetch recipes based on user preferences by category, tags, or area
+          const categorySnapshot = await db
+            .collection("recipes")
             .where("category", "in", userPreferences)
             .get();
 
-          querySnapshot.forEach((doc) => {
+          categorySnapshot.forEach((doc) => {
             results.push({ id: doc.id, ...doc.data() });
           });
+
+          const tagSnapshot = await db
+            .collection("recipes")
+            .where("tags", "array-contains-any", userPreferences)
+            .get();
+
+          tagSnapshot.forEach((doc) => {
+            results.push({ id: doc.id, ...doc.data() });
+          });
+
+          const areaSnapshot = await db
+            .collection("recipes")
+            .where("area", "in", userPreferences)
+            .get();
+
+          areaSnapshot.forEach((doc) => {
+            results.push({ id: doc.id, ...doc.data() });
+          });
+
+          // Remove duplicate recipes by using a Map with recipe IDs as keys
+          const uniqueResults = new Map();
+          results.forEach((recipe) => {
+            uniqueResults.set(recipe.id, recipe);
+          });
+
+          results = Array.from(uniqueResults.values());
         }
       }
 
@@ -76,39 +108,8 @@ function Search() {
   };
 
   return (
-    <div className="search-container">
-      <h1>Recipe Search</h1>
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Enter your search term..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
-          <option value="recipe">Search by Recipe Name</option>
-          <option value="ingredient">Search by Ingredient</option>
-          <option value="preferences">Search by Preferences</option>
-        </select>
-        <button onClick={handleSearch}>Search</button>
-      </div>
-      <div className="search-results">
-        {searchResults.length > 0 ? (
-          <ul>
-            {searchResults.map((result, index) => (
-              <li key={index}>
-                <h3>{result.title}</h3>
-                <p><strong>Category:</strong> {result.category}</p>
-                <p><strong>Area:</strong> {result.area}</p>
-                <p><strong>Instructions:</strong> {result.instructions}</p>
-                <img src={result.imageURL} alt={result.title} style={{ width: '200px', height: 'auto' }} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No results found</p>
-        )}
-      </div>
+    <div>
+        <p>Search</p>
     </div>
   );
 }
