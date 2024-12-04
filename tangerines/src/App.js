@@ -10,7 +10,7 @@ import NavBar from './pages/navbar/NavBar';
 import MyInfo from './pages/My_Info/MyInfo';
 import Search from './pages/Search/Search';
 import ExampleRecipe from './pages/ExampleRecipe/ExampleRecipe';
-
+import Home from './pages/Home/Home';
 
 function App() {
   return(
@@ -18,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LogIn />} />
         <Route path="/navbar" element={<NavBar />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/myinfo" element={<MyInfo />} />
         <Route path="/search" element={<Search />} />
         <Route path="/recipe/:title" element={<ExampleRecipe />} />  </Routes>
