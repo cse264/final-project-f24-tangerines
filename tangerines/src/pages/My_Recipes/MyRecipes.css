@@ -1,0 +1,27 @@
+
+.header-box {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    display: inline-block;
+    background-color: white;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    box-shadow: 5px 5px 0px #E9631A;
+    color: #E9631A;
+    font-family: "Kay Pho Du", serif;
+}
+
+.card{
+    top: 10%;
+    font-family: "Kay Pho Du", serif;
+    color: #707070;
+    visibility: hidden;
+}
+
+.btn{
+    font-family: "Kay Pho Du";
+    color: red;
+}
