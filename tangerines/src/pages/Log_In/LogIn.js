@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./LogIn.css";
 import LogoImage from "../../assets/images/Logo Header.svg";
 import { db, auth, provider, firebase } from "../../firebase";
@@ -104,7 +105,7 @@ function LogIn() {
       if (doc.exists && doc.data().preferences.length === 0) {
         setShowPreferences(true);
       } else {
-        navigate("/myinfo");
+        navigate("/home");
       }
     } catch (error) {
       setError("Invalid email or password. Please try again.");
