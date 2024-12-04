@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import "./Search.css";
 import { db, auth } from "../../firebase";
+import NavBar from "../navbar/NavBar";
+
 
 const Search = () => {
   const [search, setSearch] = useState("");
@@ -65,58 +68,78 @@ const Search = () => {
   const searchByRecipeTitle = async (query) => {
     const results = [];
     const searchTerm = query.toLowerCase(); // Convert the query to lowercase
-  
+
     console.log("Search query term:", searchTerm); // Debugging: Check the query term
-  
+
     try {
       const querySnapshot = await db.collection("recipes").get(); // Get all recipes
-  
+
       console.log("Query executed successfully."); // Debugging: Query executed
       console.log("Total recipes retrieved:", querySnapshot.size); // Debugging: Total recipes
-  
+
       querySnapshot.forEach((doc) => {
         const recipe = doc.data();
         const title = recipe.title.toLowerCase(); // Convert title to lowercase
-  
-        if (title.includes(searchTerm)) { // Check if the title includes the search term
+
+        if (title.includes(searchTerm)) {
           console.log("Found matching recipe:", recipe); // Debugging: Log each match
           results.push({ id: doc.id, ...recipe });
         }
       });
-  
+
       if (results.length === 0) {
         console.log("No recipes found for query:", query); // Debugging: No results
       }
     } catch (error) {
       console.error("Error fetching recipes:", error); // Debugging: Log any errors
     }
-  
+
     console.log("Final search results:", results); // Debugging: Final results
     return results;
   };
-  
-  
 
   // Search by Ingredient
   const searchByIngredient = async (ingredient) => {
-    const results = [];
-    const querySnapshot = await db.collection("recipes").get();
-
-    querySnapshot.forEach((doc) => {
-      const recipe = doc.data();
-      const ingredientsArray = recipe.ingredients || [];
-
-      if (
-        ingredientsArray.some(
-          (item) => item.ingredient.toLowerCase() === ingredient.toLowerCase()
-        )
-      ) {
-        results.push({ id: doc.id, ...recipe });
+    if (!ingredient.trim()) {
+      console.error("Ingredient is empty or invalid.");
+      return [];
+    }
+  
+    try {
+      const results = [];
+      const querySnapshot = await db.collection("recipes").get();
+  
+      querySnapshot.forEach((doc) => {
+        const recipe = doc.data();
+        // Ensure ingredientsArray is always an array
+        const ingredientsArray = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+  
+        console.log("Processing Recipe ID:", doc.id); // Debugging: Log Recipe ID
+        console.log("Ingredients Array:", ingredientsArray); // Debugging: Log Ingredients Array
+  
+        // Check if any map in the array contains the matching ingredient (case-insensitive)
+        const match = ingredientsArray.some(
+          (item) =>
+            item.ingredient?.toLowerCase().includes(ingredient.toLowerCase())
+        );
+  
+        if (match) {
+          results.push({ id: doc.id, ...recipe });
+        }
+      });
+  
+      if (results.length === 0) {
+        console.log(`No recipes found containing ingredient: ${ingredient}`);
       }
-    });
-
-    return results;
+  
+      return results;
+    } catch (error) {
+      console.error("Error searching by ingredient:", error);
+      return [];
+    }
   };
+  
+  
 
   // Search by User Preferences
   const searchByPreferences = async (preferences) => {
@@ -155,6 +178,7 @@ const Search = () => {
 
   return (
     <div className="search-container">
+      <NavBar />
       <h1>Search Recipes</h1>
       <div className="search-bar">
         <input
@@ -180,7 +204,10 @@ const Search = () => {
           <ul>
             {searchResults.map((result) => (
               <li key={result.id}>
-                <h2>{result.title}</h2>
+                {/* Link to ExampleRecipe page with the recipe title */}
+                <Link to={`/recipe/${result.title}`}>
+                  <h2>{result.title}</h2>
+                </Link>
                 <p>{result.instructions.substring(0, 100)}...</p>
               </li>
             ))}

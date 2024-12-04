@@ -20,8 +20,7 @@ function App() {
         <Route path="/navbar" element={<NavBar />} />
         <Route path="/myinfo" element={<MyInfo />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/ExampleRecipe" element={<ExampleRecipe />} />
-      </Routes>
+        <Route path="/recipe/:title" element={<ExampleRecipe />} />  </Routes>
     </Router>
   )
 }
