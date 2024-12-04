@@ -13,19 +13,29 @@ import HomeIcon from '../../assets/images/On Hover.svg';
 import PlaceholderImg from '../../assets/images/placeholder-200x200.png';
 
 function MyRecipes () {
+    // placeholder values for functionality until backend is implemented
     const [savedRecipes, setSavedRecipes] = useState([
-        { id: 1, name: 'Recipe 1', image: PlaceholderImg },
-        { id: 2, name: 'Recipe 2', image: PlaceholderImg },
+        { id: 1, name: 'Recipe Name', image: PlaceholderImg },
+        { id: 2, name: 'Recipe Name', image: PlaceholderImg },
     ]);
+
+    // working 
+    const addRecipe = (name) => {
+        const newRecipe = {
+          id: savedRecipes.length + 1,
+          name: name,
+          image: PlaceholderImg,
+        };
+        setSavedRecipes([...savedRecipes, newRecipe]);
+      };
 
     const removeRecipe = (id) => {
         const updatedRecipes = savedRecipes.filter((recipe) => recipe.id !== id);
         setSavedRecipes(updatedRecipes);
     };
-    
 
     return(
-        <div style={{ backgroundColor: "#EBEBDF", height: "100vh", margin: 0 }}>
+        <div style={{ backgroundColor: "#EBEBDF", minHeight: "100vh" }}>
             {/* Navbar */}
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
             {/* NavBar Logo */}
@@ -93,7 +103,7 @@ function MyRecipes () {
                     <img src={recipe.image} className="rounded recipe-img" alt={recipe.name} />
                     <p className="mt-2">{recipe.name}</p>
                     <button
-                    className="btn btn-danger"
+                    className="btn"
                     onClick={() => removeRecipe(recipe.id)}
                     >
                     Remove
