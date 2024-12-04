@@ -53,7 +53,7 @@ function NavBar() {
               </li>
 
               <li class="nav-item">
-                <Link class="nav-link" to="/viewchefs">
+                <Link class="nav-link" to="/myinfo">
                 <img class="view-chefs-icon" src={ViewChefsIcon} alt="View Chefs" />
                 </Link>
               </li>

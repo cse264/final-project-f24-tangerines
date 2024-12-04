@@ -140,30 +140,30 @@ function MyInfo() {
     );
   };
 
-  const removeRecipe = async (id) => {
-    if (!savedRecipes.find((recipe) => recipe.id === id)) {
-      console.log("Recipe not found");
-    } else {
-      try {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          const userRef = db.collection("users").doc(currentUser.email);
-          const doc = await userRef.get();
-          if (doc.exists) {
-            const updatedRecipes = savedRecipes.filter(
-              (recipe) => recipe.id !== id
-            );
-            await userRef.update({
-              savedRecipes: updatedRecipes,
-            });
-            setSavedRecipes(updatedRecipes);
-          }
-        }
-      } catch (error) {
-        console.log("Error removing recipe:", error);
-      }
-    }
-  };
+  // const removeRecipe = async (id) => {
+  //   if (!savedRecipes.find((recipe) => recipe.id === id)) {
+  //     console.log("Recipe not found");
+  //   } else {
+  //     try {
+  //       const currentUser = auth.currentUser;
+  //       if (currentUser) {
+  //         const userRef = db.collection("users").doc(currentUser.email);
+  //         const doc = await userRef.get();
+  //         if (doc.exists) {
+  //           const updatedRecipes = savedRecipes.filter(
+  //             (recipe) => recipe.id !== id
+  //           );
+  //           await userRef.update({
+  //             savedRecipes: updatedRecipes,
+  //           });
+  //           setSavedRecipes(updatedRecipes);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.log("Error removing recipe:", error);
+  //     }
+  //   }
+  // };
 
   return (
     <div style={{ backgroundColor: "#EBEBDF", height: "100vh", margin: 0 }}>
@@ -289,9 +289,6 @@ function MyInfo() {
               onClick={() => navigate(`/recipe/${recipe.title}`)}
             />
             <p className="mt-2">{recipe.name}</p>
-            <button className="btn" onClick={() => removeRecipe(recipe.id)}>
-              Remove
-            </button>
           </div>
         ))}
       </div>
