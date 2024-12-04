@@ -118,8 +118,9 @@ import {
                 </li>
               ))}
           </ul>
+          <br></br>
         </div>
-  
+              
         <div className="grey-container">
           <h2 className="section-title">Instructions</h2>
           <p className="instructions">{recipe.instructions}</p>

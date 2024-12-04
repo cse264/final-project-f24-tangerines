@@ -147,36 +147,61 @@ const Search = () => {
       console.log("No user preferences available.");
       return [];
     }
-
-    let results = [];
-
-    // Search by category, tags, and area
-    const queries = [
-      db.collection("recipes").where("category", "in", preferences).get(),
-      db
-        .collection("recipes")
-        .where("tags", "array-contains-any", preferences)
-        .get(),
-      db.collection("recipes").where("area", "in", preferences).get(),
-    ];
-
-    const querySnapshots = await Promise.allSettled(queries);
-
-    querySnapshots.forEach((result) => {
-      if (result.status === "fulfilled") {
-        result.value.forEach((doc) => {
-          results.push({ id: doc.id, ...doc.data() });
-        });
-      }
-    });
-
-    // Remove duplicate recipes
-    const uniqueResults = new Map();
-    results.forEach((recipe) => uniqueResults.set(recipe.id, recipe));
-    return Array.from(uniqueResults.values());
+  
+    try {
+      let results = [];
+  
+      // Search by area, ingredients, and categories
+      const areaQuery = db.collection("recipes").where("area", "in", preferences).get();
+      const categoryQuery = db.collection("recipes").where("category", "in", preferences).get();
+  
+      const ingredientsResults = [];
+      const querySnapshot = await db.collection("recipes").get();
+  
+      // Search ingredients manually since Firestore does not support array-of-map querying
+      querySnapshot.forEach((doc) => {
+        const recipe = doc.data();
+        const ingredientsArray = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+  
+        // Check if any ingredient matches the user's preferences
+        const match = ingredientsArray.some((item) =>
+          preferences.some((preference) =>
+            item.ingredient?.toLowerCase().includes(preference.toLowerCase())
+          )
+        );
+  
+        if (match) {
+          ingredientsResults.push({ id: doc.id, ...recipe });
+        }
+      });
+  
+      // Combine all queries using Promise.all
+      const [areaSnapshot, categorySnapshot] = await Promise.all([areaQuery, categoryQuery]);
+  
+      areaSnapshot.forEach((doc) => {
+        results.push({ id: doc.id, ...doc.data() });
+      });
+  
+      categorySnapshot.forEach((doc) => {
+        results.push({ id: doc.id, ...doc.data() });
+      });
+  
+      // Add ingredients-based matches
+      results = [...results, ...ingredientsResults];
+  
+      // Remove duplicate recipes by ID
+      const uniqueResults = new Map();
+      results.forEach((recipe) => uniqueResults.set(recipe.id, recipe));
+      return Array.from(uniqueResults.values());
+    } catch (error) {
+      console.error("Error searching by preferences:", error);
+      return [];
+    }
   };
+  
 
   return (
+    
     <div className="search-container">
       <NavBar />
       <h1>Search Recipes</h1>
