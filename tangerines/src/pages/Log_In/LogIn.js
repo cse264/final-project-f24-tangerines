@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import React, { useState, useEffect } from "react";
 import "./LogIn.css";
 import LogoImage from "../../assets/images/Logo Header.svg";
 import { db, auth, provider, firebase } from "../../firebase";

@@ -7,9 +7,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import LogIn from './pages/Log_In/LogIn';
 import NavBar from './pages/navbar/NavBar';
-import Home from './pages/Home/Home';
 import MyInfo from './pages/My_Info/MyInfo';
-import Home from './pages/Home/Home';
 import Search from './pages/Search/Search';
 import ExampleRecipe from './pages/ExampleRecipe/ExampleRecipe';
 import Home from './pages/Home/Home';
