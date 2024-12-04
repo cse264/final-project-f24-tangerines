@@ -45,7 +45,7 @@ const ExampleRecipe = () => {
     try {
       const userRef = doc(db, "users", userEmail); // Use email as the document ID
       await updateDoc(userRef, {
-        savedRecipes: arrayUnion(recipeId), // Add recipeId to savedRecipes array
+        savedRecipies: arrayUnion(recipeId), // Add recipeId to savedRecipes array
       });
       setSaveStatus("Recipe saved successfully!"); // Update save status
     } catch (error) {
