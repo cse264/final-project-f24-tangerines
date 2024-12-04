@@ -1,7 +1,4 @@
-// NOTE: SIGN UP BACK BUTTON DOESN'T WORKx
-
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import "./LogIn.css";
 import LogoImage from "../../assets/images/Logo Header.svg";
 import { db, auth, provider, firebase } from "../../firebase";
@@ -15,11 +12,12 @@ function LogIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
+  const [role, setRole] = useState("normal"); // Added role state
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [preferences, setPreferences] = useState([]);
   const navigate = useNavigate();
 
-  const toggleForm = () => {
-    setIsSignUp(!isSignUp);
-  };
+  const toggleForm = () => setIsSignUp(!isSignUp);
 
   const hideSignUp = () => {
     setIsSignUp(false);
@@ -30,27 +28,31 @@ function LogIn() {
     try {
       const result = await auth.signInWithPopup(provider);
       const user = result.user;
-
-      console.log("User:", user);
-      const userRef = db.collection("users").doc(user.email); //Reference to location in database
+      const userRef = db.collection("users").doc(user.email);
       const doc = await userRef.get();
+
       if (!doc.exists) {
-        //checking if user exists
         await userRef.set({
-          //setting user data
           uid: user.uid,
           email: user.email,
           username: user.displayName,
           role: "normal",
           preferences: [],
-          savedRecipies: [],
+          savedRecipes: [],
           profilePicture: user.photoURL,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
+        setShowPreferences(true); // Prompt preferences for new users
+      } else {
+        const userData = doc.data();
+        if (userData.preferences.length === 0) {
+          setShowPreferences(true);
+        } else {
+          navigate("/home");
+        }
       }
-
-      console.log("User signed in and data stored:", user);
     } catch (error) {
+      setError("Google Sign-In failed. Please try again.");
       console.error("Google Sign-In error:", error.message);
     }
   };
@@ -61,11 +63,18 @@ function LogIn() {
     setError("");
 
     try {
-      await auth.signInWithEmailAndPassword(email, password); //uses firebase auth to sign in
-      console.log("User logged in");
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const userRef = db.collection("users").doc(email);
+      const doc = await userRef.get();
+
+      if (doc.exists && doc.data().preferences.length === 0) {
+        setShowPreferences(true); // Show preferences if none exist
+      } else {
+        navigate("/home"); // Navigate to home otherwise
+      }
     } catch (error) {
-      setError(error.message); // Display any errors
-      console.error("Error logging in:", error);
+      setError("Invalid email or password. Please try again.");
+      console.error("Error logging in:", error.message);
     } finally {
       setLoading(false);
     }
@@ -73,48 +82,66 @@ function LogIn() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const userCredential = await auth.createUserWithEmailAndPassword(
-        email,
-        password
-      ); //firebase Auth
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
       await db.collection("users").doc(user.email).set({
         uid: user.uid,
         email: user.email,
         username: username,
-        role: "normal",
+        role: role, // Save selected role
         preferences: [],
-        savedRecipies: [],
+        savedRecipes: [],
         profilePicture: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log("User signed up:", user);
+      setShowPreferences(true); // Prompt preferences for new users
     } catch (error) {
-      setError(error.message);
-      console.error("Error signing up:", error);
+      setError("Sign-Up failed. Please try again.");
+      console.error("Error signing up:", error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSavePreferences = async () => {
+    const user = auth.currentUser;
+
+    if (user) {
+      try {
+        const userRef = db.collection("users").doc(user.email);
+        await userRef.update({ preferences });
+        setShowPreferences(false);
+        navigate("/home");
+      } catch (error) {
+        console.error("Error saving preferences:", error.message);
+        setError("Failed to save preferences. Please try again.");
+      }
+    }
+  };
+
+  const handlePreferenceChange = (e) => {
+    setPreferences(e.target.value.split(",").map((pref) => pref.trim()));
+  };
+
   return (
     <div>
-      {isSignUpVisible && (
-        <div class="card">
-          <img src={LogoImage} class="logo" alt="Tangerines Logo" />
-          <h1 class="loginHeader">Log In</h1>
+      {isSignUpVisible && !showPreferences && (
+        <div className="card">
+          <img src={LogoImage} className="logo" alt="Tangerines Logo" />
+          <h1 className="loginHeader">Log In</h1>
 
           <form onSubmit={handleLogin}>
-            {/* Email input */}
             <div>
               <input
                 type="email"
                 value={email}
-                class="form-control"
+                className="form-control"
                 id="inputEmail"
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter Email"
@@ -122,11 +149,10 @@ function LogIn() {
               />
             </div>
 
-            {/* Password input */}
-            <div class="form-group">
+            <div className="form-group">
               <input
                 type="password"
-                class="form-control"
+                className="form-control"
                 id="inputPassword"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -135,27 +161,25 @@ function LogIn() {
               />
             </div>
 
-            <p class="error">Email/Password not found. Please try again.</p>
-
-            {/* Submit/Log In */}
-            <button type="submit" class="btn btn-primary">
-              Log In
+            {error && <p className="error">{error}</p>}
+            <p> </p>
+            <button type="submit" className="btn btn-primary">
+              {loading ? "Logging in..." : "Log In"}
             </button>
-            {/* Google Sign-In */}
-            <p class="or">or</p>
+
+            <p className="or">or</p>
             <button
-              type="googleSubmit"
+              type="button"
               className="btn btn-primary"
               onClick={handleGoogleSignIn}
             >
               Google Log In
             </button>
 
-            {/* Sign Up */}
-            <p class="or">or</p>
-            <p class="signUp">
-              Dont have an account?{" "}
-              <span class="signUpLink" onClick={toggleForm}>
+            <p className="or">or</p>
+            <p className="signUp">
+              Don't have an account?{" "}
+              <span className="signUpLink" onClick={toggleForm}>
                 Sign Up
               </span>
             </p>
@@ -163,10 +187,9 @@ function LogIn() {
         </div>
       )}
 
-      {/* SignUp Overlay */}
-      {isSignUp && (
-        <div class="overlay">
-          <div class="overlay-form">
+      {isSignUp && !showPreferences && (
+        <div className="overlay">
+          <div className="overlay-form">
             <h2>Create New Account</h2>
             <form onSubmit={handleSignUp}>
               <div>
@@ -176,41 +199,73 @@ function LogIn() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter Email"
                   required
-                  class="form-control"
+                  className="form-control"
                 />
               </div>
-              {/* Username input */}
               <div>
                 <input
-                  type="username"
+                  type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Enter Username"
                   required
-                  class="form-control"
+                  className="form-control"
                 />
               </div>
               <div>
                 <input
                   type="password"
                   value={password}
-                  class="form-control"
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   required
+                  className="form-control"
                 />
               </div>
-              {error && <p style={{ color: "red" }}>{error}</p>}
+              <div>
+                <label>
+                  Select Role:
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    required
+                    className="form-control"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="chef">Chef</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </label>
+              </div>
+
+              {error && <p className="error">{error}</p>}
+
               <button type="submit" disabled={loading}>
                 {loading ? "Signing up..." : "Sign Up"}
               </button>
-
-              <p class="or">or</p>
-              <p class="backToLogin" onClick={hideSignUp}>
+              <p className="or">or</p>
+              <p className="backToLogin" onClick={hideSignUp}>
                 Back to Log In
               </p>
             </form>
           </div>
+        </div>
+      )}
+
+      {showPreferences && (
+        <div className="preferences">
+          <h2>Set Your Preferences</h2>
+          <div>
+            <label>
+              Select Ingredients or Cuisines You Like:
+              <input
+                type="text"
+                placeholder="E.g., Italian, Chicken"
+                onChange={handlePreferenceChange}
+              />
+            </label>
+          </div>
+          <button onClick={handleSavePreferences}>Save Preferences</button>
         </div>
       )}
     </div>
