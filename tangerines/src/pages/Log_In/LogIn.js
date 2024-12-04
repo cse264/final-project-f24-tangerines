@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./LogIn.css";
 import LogoImage from "../../assets/images/Logo Header.svg";
 import { db, auth, provider, firebase } from "../../firebase";
@@ -12,10 +12,44 @@ function LogIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [username, setUsername] = useState("");
-  const [role, setRole] = useState("normal"); // Added role state
+  const [role, setRole] = useState("normal");
   const [showPreferences, setShowPreferences] = useState(false);
   const [preferences, setPreferences] = useState([]);
+  const [availablePreferences, setAvailablePreferences] = useState([]);
   const navigate = useNavigate();
+
+  // Fetch ingredients and cuisines from the database
+  useEffect(() => {
+    const fetchPreferences = async () => {
+      try {
+        // Fetch ingredients from the ingredients collection
+        const ingredientsSnapshot = await db.collection("ingredients").get();
+        const ingredientsList = ingredientsSnapshot.docs
+          .map(doc => doc.data().title)
+          .filter(ingredient => ingredient.split(" ").length === 1); // Only ingredients with one word
+
+        // Fetch unique cuisines (areas) from the recipes collection
+        const recipesSnapshot = await db.collection("recipes").get();
+        const cuisinesSet = new Set();
+        recipesSnapshot.forEach(doc => {
+          const area = doc.data().area; // Get the area (cuisine type) from the recipe
+          if (area) cuisinesSet.add(area);
+        });
+
+        // Combine both lists of ingredients and cuisines
+        const combinedPreferences = [...ingredientsList, ...Array.from(cuisinesSet)];
+        
+        console.log("Available Preferences:", combinedPreferences); // Log available preferences
+
+        setAvailablePreferences(combinedPreferences);
+      } catch (error) {
+        console.error("Error fetching preferences:", error);
+        setError("Failed to load preferences. Please try again.");
+      }
+    };
+
+    fetchPreferences();
+  }, []);
 
   const toggleForm = () => setIsSignUp(!isSignUp);
 
@@ -42,7 +76,7 @@ function LogIn() {
           profilePicture: user.photoURL,
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
-        setShowPreferences(true); // Prompt preferences for new users
+        setShowPreferences(true);
       } else {
         const userData = doc.data();
         if (userData.preferences.length === 0) {
@@ -68,9 +102,9 @@ function LogIn() {
       const doc = await userRef.get();
 
       if (doc.exists && doc.data().preferences.length === 0) {
-        setShowPreferences(true); // Show preferences if none exist
+        setShowPreferences(true);
       } else {
-        navigate("/home"); // Navigate to home otherwise
+        navigate("/home");
       }
     } catch (error) {
       setError("Invalid email or password. Please try again.");
@@ -93,14 +127,14 @@ function LogIn() {
         uid: user.uid,
         email: user.email,
         username: username,
-        role: role, // Save selected role
+        role: role,
         preferences: [],
         savedRecipes: [],
         profilePicture: "",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
-      setShowPreferences(true); // Prompt preferences for new users
+      setShowPreferences(true);
     } catch (error) {
       setError("Sign-Up failed. Please try again.");
       console.error("Error signing up:", error.message);
@@ -125,8 +159,12 @@ function LogIn() {
     }
   };
 
-  const handlePreferenceChange = (e) => {
-    setPreferences(e.target.value.split(",").map((pref) => pref.trim()));
+  const handlePreferenceClick = (preference) => {
+    setPreferences((prevPreferences) =>
+      prevPreferences.includes(preference)
+        ? prevPreferences.filter((pref) => pref !== preference)
+        : [...prevPreferences, preference]
+    );
   };
 
   return (
@@ -233,41 +271,73 @@ function LogIn() {
                   >
                     <option value="normal">Normal</option>
                     <option value="chef">Chef</option>
-                    <option value="admin">Admin</option>
                   </select>
                 </label>
               </div>
 
               {error && <p className="error">{error}</p>}
-
-              <button type="submit" disabled={loading}>
-                {loading ? "Signing up..." : "Sign Up"}
+              <button type="submit" className="btn btn-primary">
+                {loading ? "Signing Up..." : "Sign Up"}
               </button>
-              <p className="or">or</p>
-              <p className="backToLogin" onClick={hideSignUp}>
-                Back to Log In
+              <p className="loginLink" onClick={hideSignUp}>
+                Already have an account? Log In
               </p>
             </form>
           </div>
         </div>
       )}
 
-      {showPreferences && (
-        <div className="preferences">
-          <h2>Set Your Preferences</h2>
-          <div>
-            <label>
-              Select Ingredients or Cuisines You Like:
-              <input
-                type="text"
-                placeholder="E.g., Italian, Chicken"
-                onChange={handlePreferenceChange}
-              />
-            </label>
-          </div>
-          <button onClick={handleSavePreferences}>Save Preferences</button>
-        </div>
-      )}
+{showPreferences && (
+  <div className="preferences-container">
+    <h2>Select Your Preferences</h2>
+
+    {/* Ingredients Section */}
+    <div className="preferences-section">
+      <h3>Ingredients & Cuisines </h3>
+      <div className="preference-buttons">
+        {availablePreferences
+          .filter((pref) => pref.split(" ").length === 1) // Filter to only ingredients (one word)
+          .map((pref) => (
+            <button
+              key={pref}
+              onClick={() => handlePreferenceClick(pref)}
+              className={`preference-button ${
+                preferences.includes(pref) ? "selected" : ""
+              }`}
+            >
+              {pref}
+            </button>
+          ))}
+      </div>
+    </div>
+
+    {/* Area (Cuisine) Section */}
+    <div className="preferences-section">
+     
+      <div className="preference-buttons">
+        {availablePreferences
+          .filter((pref) => pref.split(" ").length > 1) // Filter to only areas (more than one word)
+          .map((pref) => (
+            <button
+              key={pref}
+              onClick={() => handlePreferenceClick(pref)}
+              className={`preference-button ${
+                preferences.includes(pref) ? "selected" : ""
+              }`}
+            >
+              {pref}
+            </button>
+          ))}
+      </div>
+    </div>
+
+    <div>
+      <button onClick={handleSavePreferences} className="save-preferences-btn">
+        Save Preferences
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
