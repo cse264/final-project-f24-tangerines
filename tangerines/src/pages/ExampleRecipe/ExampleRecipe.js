@@ -7,6 +7,7 @@ import {
     getDoc,
     updateDoc,
     arrayUnion,
+    arrayRemove,
   } from "firebase/firestore"; // Import necessary Firestore methods
   import React, { useEffect, useState } from "react";
   import { db } from "../../firebase"; // Adjust path to your Firebase configuration
@@ -21,6 +22,8 @@ import {
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saveStatus, setSaveStatus] = useState(""); // Status message for save operation
+    const [rating, setRating] = useState(0); // User's selected rating
+    const [averageRating, setAverageRating] = useState(null); // Average rating of the recipe
   
     const auth = getAuth(); // Initialize Firebase Auth
     const userEmail = auth.currentUser?.email; // Get the logged-in user's email
@@ -57,6 +60,7 @@ import {
           if (docSnap.exists()) {
             const data = docSnap.data();
             setRecipe(data); // Store the recipe data
+            setAverageRating(data.averageRating || null); // Set the average rating
           } else {
             console.error("No such document!");
           }
@@ -79,12 +83,66 @@ import {
       try {
         const userRef = doc(db, "users", userEmail); // Use email as the document ID
         await updateDoc(userRef, {
-          savedRecipies: arrayUnion(recipeId), // Add recipeId to savedRecipes array
+          savedRecipes: arrayUnion(recipeId), // Add recipeId to savedRecipes array
         });
         setSaveStatus("Recipe saved successfully!"); // Update save status
       } catch (error) {
         console.error("Error saving recipe:", error);
         setSaveStatus("Failed to save recipe."); // Update save status
+      }
+    };
+  
+    const handleRatingSubmit = async () => {
+      if (!userEmail) {
+        setSaveStatus("You need to be logged in to rate a recipe.");
+        return;
+      }
+  
+      try {
+        const recipeRef = doc(db, "recipes", recipeId);
+        const updatedRatings = recipe.ratings || [];
+  
+        // Add user's rating
+        const newRating = {
+          userEmail,
+          value: rating,
+        };
+  
+        const existingRatingIndex = updatedRatings.findIndex(
+          (r) => r.userEmail === userEmail
+        );
+  
+        if (existingRatingIndex !== -1) {
+          // Replace existing rating
+          updatedRatings[existingRatingIndex] = newRating;
+        } else {
+          // Add new rating
+          updatedRatings.push(newRating);
+        }
+  
+        // Calculate new average rating
+        const totalRating = updatedRatings.reduce(
+          (sum, r) => sum + r.value,
+          0
+        );
+        const avgRating = totalRating / updatedRatings.length;
+  
+        // Update Firestore
+        await updateDoc(recipeRef, {
+          ratings: updatedRatings,
+          averageRating: avgRating,
+        });
+  
+        setAverageRating(avgRating); // Update local state
+        setRecipe((prev) => ({
+          ...prev,
+          ratings: updatedRatings,
+          averageRating: avgRating,
+        }));
+        setSaveStatus("Rating submitted successfully!");
+      } catch (error) {
+        console.error("Error submitting rating:", error);
+        setSaveStatus("Failed to submit rating.");
       }
     };
   
@@ -98,7 +156,7 @@ import {
   
     return (
       <div className="page-container">
-        <NavBar /> {/* Add the NavBar at the top */}
+        <NavBar />
         <h1 className="recipe-title">{recipe.title}</h1>
         <div className="grey-container">
           <img
@@ -118,18 +176,38 @@ import {
                 </li>
               ))}
           </ul>
-          <br></br>
         </div>
-              
+  
         <div className="grey-container">
           <h2 className="section-title">Instructions</h2>
           <p className="instructions">{recipe.instructions}</p>
         </div>
   
+        <div className="rating-container">
+          <h2 className="section-title">Rating</h2>
+          <p>Average Rating: {averageRating ? averageRating.toFixed(1) : "N/A"}</p>
+          <select
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))}
+          >
+            <option value="" disabled>
+              Select Rating
+            </option>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <option key={value} value={value}>
+                {value} Star{value > 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+          <button className="save-button" onClick={handleRatingSubmit}>
+            Submit Rating
+          </button>
+        </div>
+  
         <button className="save-button" onClick={handleSaveRecipe}>
           Save Recipe
         </button>
-        {saveStatus && <p className="save-status">{saveStatus}</p>} {/* Display save status */}
+        {saveStatus && <p className="save-status">{saveStatus}</p>}
       </div>
     );
   };

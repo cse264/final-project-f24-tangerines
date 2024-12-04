@@ -52,6 +52,7 @@ function Home() {
         return;
       }
   
+      const recipeRef = db.collection("recipes").doc(recipeId);
       const userRef = db.collection("users").doc(user.email);
   
       let updatedSavedRecipes;
@@ -61,17 +62,23 @@ function Home() {
         await userRef.update({
           savedRecipes: firebase.firestore.FieldValue.arrayRemove(recipeId),
         });
+        await recipeRef.update({
+          saves: firebase.firestore.FieldValue.increment(-1),
+        });
       } else {
         // Add the recipe to savedRecipes
-        updatedSavedRecipes = [...savedRecipes, recipeId];
+            updatedSavedRecipes = [...savedRecipes, recipeId];
         await userRef.update({
           savedRecipes: firebase.firestore.FieldValue.arrayUnion(recipeId),
+        });
+        await recipeRef.update({
+          saves: firebase.firestore.FieldValue.increment(1),
         });
       }
   
       setSavedRecipes(updatedSavedRecipes);
     } catch (err) {
-      console.error("Error toggling save:", err);
+      console.error("Error toggling save: ", err);
       setError("Failed to save the recipe.");
     }
   };
@@ -218,30 +225,42 @@ function Home() {
         <p className="center-text">No recipes found. Try updating your preferences.</p>
       ) : (
         <div className="recipes">
-          {recipes.map((recipe) => (
-            <div className="recipe-card" key={recipe.id}>
-              <img
-                className="recipe-image"
-                src={recipe.imageURL}
-                alt={recipe.title}
-              />
-              <Link to={`/recipe/${recipe.title}`} className="recipe-title">
-                <h2>{recipe.title}</h2>
-              </Link>
-              <div className="recipe-actions">
-                <button
-                  className="save-button"
-                  onClick={() => toggleSaveRecipe(recipe.id)}
-                >
-                  {savedRecipes.includes(recipe.id) ? (
-                    <FaHeart className="heart-icon saved" />
-                  ) : (
-                    <FaRegHeart className="heart-icon" />
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
+  {recipes.map((recipe) => (
+    <div className="recipe-card" key={recipe.id}>
+      <img
+        className="recipe-image"
+        src={recipe.imageURL}
+      />
+      
+      <Link to={`/recipe/${recipe.title}`} className="recipe-title">
+        <h2>{recipe.title}</h2>
+      </Link>
+      <p className="recipe-description">{recipe.description}</p>
+
+      {/* Display saves and rating */}
+      <div className="recipe-stats ">
+        <p>
+          <strong>Saves:</strong> {recipe.saves || 0}
+        </p>
+        <p>
+          <strong>Rating:</strong> {recipe.rating ? recipe.rating.toFixed(1) : "N/A"}
+        </p>
+      </div>
+
+      <div className="recipe-actions">
+        <button
+          className="save-button"
+          onClick={() => toggleSaveRecipe(recipe.id)}
+        >
+          {savedRecipes.includes(recipe.id) ? (
+            <FaHeart className="heart-icon saved" />
+          ) : (
+            <FaRegHeart className="heart-icon" />
+          )}
+        </button>
+      </div>
+    </div>
+  ))}
         </div>
       )}
     </div>
