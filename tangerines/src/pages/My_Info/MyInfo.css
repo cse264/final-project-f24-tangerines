@@ -99,3 +99,73 @@
     cursor: pointer;
     border-radius: 4px;
   }
+  .saved-recipes-section {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 5px 5px 0px #E9631A;
+    color: #E9631A;
+  }
+  
+  .saved-recipes-title {
+    color: #E9631A;
+    font-family: "Kay Pho Du", serif;
+  }
+  
+  .recipe-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding-top: 20px;
+  }
+  
+  .recipe-card {
+    width: 200px;
+    background-color: #fff6e5;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .recipe-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .recipe-img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  
+  .recipe-details {
+    margin-top: 10px;
+  }
+  
+  .recipe-title {
+    font-size: 1.1rem;
+    color: #707070;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .remove-recipe-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  
+  .remove-recipe-btn:hover {
+    background-color: #e0312b;
+  }
+  

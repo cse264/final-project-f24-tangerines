@@ -14,8 +14,6 @@ function MyInfo() {
   const [myPreferences, setMyPreferences] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [user, setUser] = useState({ username: "", email: "", role: "" });
-  const [newPreference, setNewPreference] = useState(""); // State to manage new preference input
-  // const [showAddPreferenceModal, setShowAddPreferenceModal] = useState(false); // State to show or hide modal
   const [showPreferences, setShowPreferences] = useState(false);
   const [preferences, setPreferences] = useState([]);
   const [availablePreferences, setAvailablePreferences] = useState([]);
@@ -34,28 +32,10 @@ function MyInfo() {
           if (doc.exists) {
             const userData = doc.data();
             console.log("User data:", userData);
-            const recipeIDArray = userData.savedRecipes;
-            recipeIDArray.forEach((recipeID) => {
-              db.collection("recipes")
-                .doc(recipeID)
-                .get()
-                .then((doc) => {
-                  if (doc.exists) {
-                    const recipeData = doc.data();
-                    setSavedRecipes((savedRecipes) => [
-                      ...savedRecipes,
-                      recipeData,
-                    ]);
-                  } else {
-                    console.log("No such document!");
-                  }
-                })
-                .catch((error) => {
-                  console.log("Error getting document:", error);
-                });
-            });
             setUser(userData);
             setMyPreferences(userData.preferences);
+            await fetchSavedRecipes(userData.savedRecipes);
+            console.log("Saved recipes:", savedRecipes);
           }
         } else {
           console.log("No user is signed in");
@@ -67,6 +47,34 @@ function MyInfo() {
 
     getUserInfo();
   }, []);
+
+  // Function to fetch saved recipes
+  const fetchSavedRecipes = async (recipeIDs) => {
+    console.log("Fetching saved recipes...", recipeIDs);
+    try {
+      const recipePromises = recipeIDs.map((recipeID) =>
+        db.collection("recipes").doc(recipeID).get()
+      );
+
+      const recipeDocs = await Promise.all(recipePromises);
+
+
+      const uniqueRecipes = [];
+      const recipeIdsSet = new Set(); // To keep track of unique recipe IDs
+
+      recipeDocs.forEach((doc) => {
+        if (doc.exists) {
+          const recipeData = doc.data();
+          console.log("Recipe data:", recipeData);
+            uniqueRecipes.push({ id: recipeData.id, ...recipeData });
+        }
+      });
+
+      setSavedRecipes(uniqueRecipes);
+    } catch (error) {
+      console.error("Error fetching saved recipes:", error);
+    }
+  };
 
   // Fetch available preferences from Firestore when "+" button is clicked
   const fetchPreferences = async () => {
@@ -140,30 +148,30 @@ function MyInfo() {
     );
   };
 
-  // const removeRecipe = async (id) => {
-  //   if (!savedRecipes.find((recipe) => recipe.id === id)) {
-  //     console.log("Recipe not found");
-  //   } else {
-  //     try {
-  //       const currentUser = auth.currentUser;
-  //       if (currentUser) {
-  //         const userRef = db.collection("users").doc(currentUser.email);
-  //         const doc = await userRef.get();
-  //         if (doc.exists) {
-  //           const updatedRecipes = savedRecipes.filter(
-  //             (recipe) => recipe.id !== id
-  //           );
-  //           await userRef.update({
-  //             savedRecipes: updatedRecipes,
-  //           });
-  //           setSavedRecipes(updatedRecipes);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.log("Error removing recipe:", error);
-  //     }
-  //   }
-  // };
+  const removeRecipe = async (id) => {
+    if (!savedRecipes.find((recipe) => recipe.id === id)) {
+      console.log("Recipe not found");
+    } else {
+      try {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userRef = db.collection("users").doc(currentUser.email);
+          const doc = await userRef.get();
+          if (doc.exists) {
+            const updatedRecipes = savedRecipes.filter(
+              (recipe) => recipe.id !== id
+            );
+            await userRef.update({
+              savedRecipes: updatedRecipes,
+            });
+            setSavedRecipes(updatedRecipes);
+          }
+        }
+      } catch (error) {
+        console.log("Error removing recipe:", error);
+      }
+    }
+  };
 
   return (
     <div style={{ backgroundColor: "#EBEBDF", height: "100vh", margin: 0 }}>
@@ -273,24 +281,44 @@ function MyInfo() {
           </button>
         </div>
       </div>
-      <div className="card">
-        <h2>Saved Recipes</h2>
-        {/* Add code here to display saved recipes if needed */}
-      </div>
+      <div className="saved-recipes-section card">
+        <h2 className="saved-recipes-title">Saved Recipes</h2>
 
-      {/* Recipe images */}
-      <div className="recipe-container d-flex justify-content-center flex-wrap gap-4">
-        {savedRecipes.map((recipe) => (
-          <div key={recipe.id} className="recipe-generic text-center">
-            <img
-              src={recipe.image}
-              className="rounded recipe-img"
-              alt={recipe.title}
-              onClick={() => navigate(`/recipe/${recipe.title}`)}
-            />
-            <p className="mt-2">{recipe.name}</p>
+        {/* Show this message if there are no saved recipes */}
+        {savedRecipes.length === 0 && (
+          <div className="card message-card">
+            <h2>Save a recipe to add it here!</h2>
           </div>
-        ))}
+        )}
+
+        {/* Recipe images */}
+        <div className="recipe-container">
+          {savedRecipes.map((recipe) => (
+            <div
+              key={recipe.id}
+              className="recipe-card"
+              onClick={() => navigate(`/recipe/${recipe.title}`)}
+            >
+              <img
+                src={recipe.imageURL}
+                className="recipe-img rounded"
+                alt={recipe.title}
+              />
+              <div className="recipe-details">
+                <p className="recipe-title">{recipe.title}</p>
+                <button
+                  className="remove-recipe-btn"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent navigating to recipe details when clicking remove
+                    removeRecipe(recipe.id);
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Preference Selection Screen (Full Screen Overlay) */}
