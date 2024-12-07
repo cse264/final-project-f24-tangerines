@@ -9,6 +9,7 @@ import LogIn from './pages/Log_In/LogIn';
 import NavBar from './pages/navbar/NavBar';
 import MyInfo from './pages/My_Info/MyInfo';
 import Search from './pages/Search/Search';
+import FoodCategories from './pages/Food_Categories/FoodCategories';
 
 import ExampleRecipe from './pages/ExampleRecipe/ExampleRecipe';
 import Home from './pages/Home/Home';
@@ -23,6 +24,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/myinfo" element={<MyInfo />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/foodcategories" element={<FoodCategories />} />
         <Route path="/recipe/:title" element={<ExampleRecipe />} />  </Routes>
     </Router>
   )

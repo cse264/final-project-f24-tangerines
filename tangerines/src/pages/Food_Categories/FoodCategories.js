@@ -1,73 +1,133 @@
-import React from 'react';
-//import { useState } from 'react';
-import './FoodCategories.css';
+import React, { useState, useEffect } from "react";
+import { db } from "../../firebase";
+import { Link, useNavigate } from "react-router-dom"; // Import Link and navigate
+import "./FoodCategories.css";
+import NavBar from "../navbar/NavBar";
+import { FaHeart, FaRegHeart } from "react-icons/fa"; // Import heart icons for save button
 
-// nav
+const FoodCategories = () => {
+  const [categories, setCategories] = useState([]);
+  const [recipes, setRecipes] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [savedRecipes, setSavedRecipes] = useState([]); // State to track saved recipes
+  const navigate = useNavigate();
 
-import '../navbar/NavBar.css';
-import { Link } from 'react-router-dom';
+  useEffect(() => {
+    // Fetch all unique categories from Firestore
+    db.collection("recipes")
+      .get()
+      .then((snapshot) => {
+        const uniqueCategories = new Set();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.category) {
+            uniqueCategories.add(data.category);
+          }
+        });
+        setCategories([...uniqueCategories]);
+      })
+      .catch((error) => console.error("Error fetching categories:", error));
+  }, []);
 
-import logo from "../../assets/images/Logo.svg";
-import searchIcon from "../../assets/images/Search Icon.svg";
-import MyRecipeIcon from '../../assets/images/Recipe Button.svg';
-import ExploreRecipesIcon from '../../assets/images/Food Button.svg';
-import ViewChefsIcon from '../../assets/images/View Chefs Button.svg';
-import HomeIcon from '../../assets/images/On Hover.svg';
+  const fetchRecipesByCategory = (category) => {
+    setSelectedCategory(category);
 
-function FoodCategories () {
-    return(
-        <div style={{ backgroundColor: "#EBEBDF", height: "100vh", margin: 0 }}>
-            {/* Navbar */}
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            {/* NavBar Logo */}
-            <a class="navbar-brand" href="/">
-                <img class="logo" src={logo} alt="Logo" />
-            </a>
-        
-            {/* Toggle button for smaller screens */}
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        
-            {/* Navbar links */}
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
+    db.collection("recipes")
+      .where("category", "==", category)
+      .get()
+      .then((snapshot) => {
+        const categoryRecipes = [];
+        snapshot.forEach((doc) => {
+          categoryRecipes.push({ id: doc.id, ...doc.data() });
+        });
+        setRecipes(categoryRecipes);
+      })
+      .catch((error) => console.error("Error fetching recipes:", error));
+  };
 
-                <li class="nav-item active">
-                    <Link class="navbar-link" to="/search">
-                        <img class="search-icon" src={searchIcon} alt="Search" />
-                    </Link>
-                </li>
+  const toggleSaveRecipe = (recipeId) => {
+    setSavedRecipes((prev) =>
+      prev.includes(recipeId)
+        ? prev.filter((id) => id !== recipeId)
+        : [...prev, recipeId]
+    );
+  };
 
-                <li class="nav-item">
-                    <Link class="nav-link" to="/myrecipes">
-                        <img class="my-recipe-icon" src={MyRecipeIcon} alt="My Recipes" />
-                    </Link>
-                </li>
+  return (
+    <div className="food-categories">
+      <NavBar />
+      {!selectedCategory && (
+        <>
+          <br />
+          <br />
+          <h1>Food Categories</h1>
+          <br />
+          <div className="categories-grid">
+            {categories.map((category) => (
+              <div
+                key={category}
+                className="category-card"
+                onClick={() => fetchRecipesByCategory(category)}
+              >
+                {category}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
-                <li class="nav-item">
-                    <Link class="nav-link" to="/myinfo">
-                    <img class="home-icon" src={HomeIcon} alt="Home" />
-                    </Link>
-                </li>
-
-                <li class="nav-item">
-                    <Link class="nav-link" to="/foodcategories">
-                    <img class="explore-recipe-icon" src={ExploreRecipesIcon} alt="Explore Recipes" />
-                    </Link>
-                </li>
-
-                <li class="nav-item">
-                    <Link class="nav-link" to="/viewchefs">
-                    <img class="view-chefs-icon" src={ViewChefsIcon} alt="View Chefs" />
-                    </Link>
-                </li>
-
-                </ul>
-            </div>
-            </nav>
-        </div>
-    )
-}
+      {selectedCategory && (
+        <>
+        <br></br>
+        <br></br>
+          <h1>Recipes in {selectedCategory}</h1>
+          <br></br>
+          <button
+            className="back-button"
+            onClick={() => setSelectedCategory(null)}
+          >
+            Back to Categories
+          </button>
+          <div className="recipes-grid">
+            {recipes.map((recipe) => (
+              <div className="recipe-card" key={recipe.id}>
+                <img
+                  className="recipe-image"
+                  src={recipe.imageURL}
+                  alt={recipe.title}
+                />
+                <Link to={`/recipe/${recipe.title}`} className="recipe-title">
+                  <h2>{recipe.title}</h2>
+                </Link>
+                <p className="recipe-description">{recipe.description}</p>
+                <div className="recipe-stats">
+                  <p>
+                    <strong>Saves:</strong> {recipe.saves || 0}
+                  </p>
+                  <p>
+                    <strong>Rating:</strong>{" "}
+                    {recipe.rating ? recipe.rating.toFixed(1) : "N/A"}
+                  </p>
+                </div>
+                <div className="recipe-actions">
+                  <button
+                    className="save-button"
+                    onClick={() => toggleSaveRecipe(recipe.id)}
+                  >
+                    {savedRecipes.includes(recipe.id) ? (
+                      <FaHeart className="heart-icon saved" />
+                    ) : (
+                      <FaRegHeart className="heart-icon" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 export default FoodCategories;
