@@ -27,23 +27,8 @@ function MyRecipes() {
           if (doc.exists) {
             const userData = doc.data();
             console.log("User data:", userData);
-            const recipeIDArray = userData.savedRecipes;
-            recipeIDArray.forEach((recipeID) => {
-                db.collection("recipes")
-                    .doc(recipeID)
-                    .get()
-                    .then((doc) => {
-                    if (doc.exists) {
-                        const recipeData = doc.data();
-                        setSavedRecipes((savedRecipes) => [...savedRecipes, recipeData]);
-                    } else {
-                        console.log("No such document!");
-                    }
-                    })
-                    .catch((error) => {
-                    console.log("Error getting document:", error);
-                    });
-            });
+            await fetchSavedRecipes(userData.savedRecipes);
+            console.log("Saved recipes:", savedRecipes);
           }
         } else {
           console.log("No user is signed in");
@@ -55,6 +40,34 @@ function MyRecipes() {
 
     getUserInfo();
   }, []);
+
+  // Function to fetch saved recipes
+  const fetchSavedRecipes = async (recipeIDs) => {
+    console.log("Fetching saved recipes...", recipeIDs);
+    try {
+      const recipePromises = recipeIDs.map((recipeID) =>
+        db.collection("recipes").doc(recipeID).get()
+      );
+
+      const recipeDocs = await Promise.all(recipePromises);
+
+
+      const uniqueRecipes = [];
+      const recipeIdsSet = new Set(); // To keep track of unique recipe IDs
+
+      recipeDocs.forEach((doc) => {
+        if (doc.exists) {
+          const recipeData = doc.data();
+          console.log("Recipe data:", recipeData);
+            uniqueRecipes.push({ id: recipeData.id, ...recipeData });
+        }
+      });
+
+      setSavedRecipes(uniqueRecipes);
+    } catch (error) {
+      console.error("Error fetching saved recipes:", error);
+    }
+  };
 
   const addRecipe = (name) => {
     const newRecipe = {
@@ -85,6 +98,15 @@ function MyRecipes() {
       } catch (error) {
         console.log("Error removing recipe:", error);
       }
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      navigate("/"); // Redirect to login page
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -154,6 +176,20 @@ function MyRecipes() {
                 />
               </Link>
             </li>
+            <button
+            onClick={handleSignOut}
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              background: "none",
+              border: "1px solid black",
+              padding: "5px 10px",
+              cursor: "pointer",
+            }}
+          >
+            Sign Out
+          </button>
           </ul>
         </div>
       </nav>
@@ -175,12 +211,12 @@ function MyRecipes() {
         {savedRecipes.map((recipe) => (
           <div key={recipe.id} className="recipe-generic text-center">
             <img
-              src={recipe.image || PlaceholderImg}
+              src={recipe.imageURL || PlaceholderImg}
               className="rounded recipe-img"
-              alt={recipe.name}
+              alt={recipe.title}
               onClick={() => navigate(`/recipe/${recipe.title}`)}
             />
-            <p className="mt-2">{recipe.name}</p>
+            <p className="mt-2">{recipe.title}</p>
             <button className="btn" onClick={() => removeRecipe(recipe.id)}>
               Remove
             </button>

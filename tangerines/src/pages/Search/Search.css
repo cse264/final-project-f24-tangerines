@@ -1,6 +1,5 @@
 .search-container {
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%; /* Make the container span the full width */
   padding: 20px;
   font-family: Arial, sans-serif;
   color: #333;
@@ -44,4 +43,10 @@
   background: #f8f4e3;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }

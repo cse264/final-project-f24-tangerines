@@ -148,28 +148,36 @@ function MyInfo() {
     );
   };
 
-  const removeRecipe = async (id) => {
-    if (!savedRecipes.find((recipe) => recipe.id === id)) {
-      console.log("Recipe not found");
-    } else {
-      try {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          const userRef = db.collection("users").doc(currentUser.email);
-          const doc = await userRef.get();
-          if (doc.exists) {
-            const updatedRecipes = savedRecipes.filter(
-              (recipe) => recipe.id !== id
-            );
-            await userRef.update({
-              savedRecipes: updatedRecipes,
-            });
-            setSavedRecipes(updatedRecipes);
-          }
-        }
-      } catch (error) {
-        console.log("Error removing recipe:", error);
-      }
+  // const removeRecipe = async (id) => {
+  //   if (!savedRecipes.find((recipe) => recipe.id === id)) {
+  //     console.log("Recipe not found");
+  //   } else {
+  //     try {
+  //       const currentUser = auth.currentUser;
+  //       if (currentUser) {
+  //         const userRef = db.collection("users").doc(currentUser.email);
+  //         const doc = await userRef.get();
+  //         if (doc.exists) {
+  //           const updatedRecipes = savedRecipes.filter(
+  //             (recipe) => recipe.id !== id
+  //           );
+  //           await userRef.update({
+  //             savedRecipes: updatedRecipes,
+  //           });
+  //           setSavedRecipes(updatedRecipes);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.log("Error removing recipe:", error);
+  //     }
+  //   }
+  // };
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      navigate("/"); // Redirect to login page
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -203,7 +211,7 @@ function MyInfo() {
                 <img class="search-icon" src={searchIcon} alt="Search" />
               </Link>
             </li>
-
+{/* 
             <li class="nav-item">
               <Link class="nav-link" to="/myrecipes">
                 <img
@@ -212,7 +220,7 @@ function MyInfo() {
                   alt="My Recipes"
                 />
               </Link>
-            </li>
+            </li> */}
 
             <li class="nav-item">
               <Link class="nav-link" to="/home">
@@ -239,6 +247,21 @@ function MyInfo() {
                 />
               </Link>
             </li>
+
+            <button
+            onClick={handleSignOut}
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              background: "none",
+              border: "1px solid black",
+              padding: "5px 10px",
+              cursor: "pointer",
+            }}
+          >
+            Sign Out
+          </button>
           </ul>
         </div>
       </nav>
@@ -284,13 +307,7 @@ function MyInfo() {
       <div className="saved-recipes-section card">
         <h2 className="saved-recipes-title">Saved Recipes</h2>
 
-        {/* Show this message if there are no saved recipes */}
-        {savedRecipes.length === 0 && (
-          <div className="card message-card">
-            <h2>Save a recipe to add it here!</h2>
-          </div>
-        )}
-
+       
         {/* Recipe images */}
         <div className="recipe-container">
           {savedRecipes.map((recipe) => (
@@ -306,15 +323,6 @@ function MyInfo() {
               />
               <div className="recipe-details">
                 <p className="recipe-title">{recipe.title}</p>
-                <button
-                  className="remove-recipe-btn"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent navigating to recipe details when clicking remove
-                    removeRecipe(recipe.id);
-                  }}
-                >
-                  Remove
-                </button>
               </div>
             </div>
           ))}
