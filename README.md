@@ -32,3 +32,6 @@ The app also includes a user hierarchy:
 - [Bootstrap](https://getbootstrap.com)
 - [Figma](https://www.figma.com)
 - [Trello](https://www.trello.com)
+
+## Figma
+Figma Design and User case: <https://www.figma.com/design/4JDsxkYpmcFeffHHbEUNig/tangerines?node-id=56-84&t=LAlMo7gI9W20UbTB-1>
